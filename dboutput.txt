@@ -1,0 +1,43 @@
+NAME: db
+LAST DEPLOYED: Tue Jun 22 08:23:40 2021
+NAMESPACE: mduser012
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+Please be patient while the chart is being deployed
+
+Tip:
+
+  Watch the deployment status using the command: kubectl get pods -w --namespace mduser012
+
+Services:
+
+  echo Master: db-mysql.mduser012.svc.cluster.local:3306
+  echo Slave:  db-mysql-slave.mduser012.svc.cluster.local:3306
+
+Administrator credentials:
+
+  echo Username: root
+  echo Password : $(kubectl get secret --namespace mduser012 db-mysql -o jsonpath="{.data.mysql-root-password}" | base64 --decode)
+
+To connect to your database:
+
+  1. Run a pod that you can use as a client:
+
+      kubectl run db-mysql-client --rm --tty -i --restart='Never' --image  gcr.io/sys-2b0109it/demo/bitnami/mysql:8.0.22-centos-7-r0 --namespace mduser012 --command -- bash
+
+  2. To connect to master service (read/write):
+
+      mysql -h db-mysql.mduser012.svc.cluster.local -uroot -p petclinic
+
+  3. To connect to slave service (read-only):
+
+      mysql -h db-mysql-slave.mduser012.svc.cluster.local -uroot -p petclinic
+
+To upgrade this helm chart:
+
+  1. Obtain the password as described on the 'Administrator credentials' section and set the 'root.password' parameter as shown below:
+
+      ROOT_PASSWORD=$(kubectl get secret --namespace mduser012 db-mysql -o jsonpath="{.data.mysql-root-password}" | base64 --decode)
+      helm upgrade db bitnami/mysql --set root.password=$ROOT_PASSWORD
